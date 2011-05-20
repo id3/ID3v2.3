@@ -1,0 +1,331 @@
+This is a collection of ideas from the ID3.org developers mailing list
+at id3v2@id3.org with regard to the creation of a followon revision of
+the ID3v2.3.0 specification.  It is not intended to be complete and
+edits are expected and encouraged. Best efforts have been made to
+retain the author of each item.
+
+
+		    ------------------------------
+
+Ben Allison (2011-03-30):
+
+* Allow ID3v2.3 tags at the end of the file with a footer, a-la ID3v2.4.
+This shouldn't break any existing specs.
+
+* Allow UTF-8 character data in 2.3, similar to 2.4, with the same
+encoding spec (type = 3)
+
+* Formalize multiple-value tags.  Whether that's simple multiple frames in
+the same tag (e.g. two or more TPE1 frames) or a single null-delimited
+frame
+
+* Formalize TPE2 as album artist.  Although ideally we'd make a new frame
+for this, this has been a de-facto standard.
+
+* Add new frames from 2.4 to the 2.3 spec.  It shouldn't break any
+existing parsers to have unknown frames.  For example, TMOO (Mood)
+
+* Clarify unsynchronization rules (for example, the size reflects data
+size *after* unsynchronization rather than before).  This is already in
+the spec but should be made clearer, IMO.  Also, clarify the issue of
+frames that are both compressed and unsynchronized.
+
+* It would be nice to establish rules for year tag with regards to
+compilations and greatest hits.  I've seen albums where each file is
+tagged with a year of the original song release year and I've seen albums
+tagged with the release year of the greatest hits album as the year.  Both
+years should be able to be described in the tag!
+
+* Clarification on sync-safe frame header sizes, although this is only an
+issue for 2.4
+
+* Establishment of a compliance test-suite, that tests various
+combinations of flags (unsynchronized, compressed), versions (2.01, 2.2,
+2.3, 2.4), locations (prepended, appended) and frames.
+
+		    ------------------------------
+  
+Jud White (2011-03-30):
+
+Add another +1 for UTF-8. Official support, that is. I think a lot of
+people just mark it some type of Unicode and write UTF-8 anyway :) 
+
+
+		    ------------------------------
+
+Mathias K. (2011-03-30):
+
+ * Allow ID3v2.3 tags at the end of the file with a footer, a-la ID3v2.4.
+ This shouldn't break any existing specs.
+
+
+    Well it does - from the specs: "The ID3v2 tag header, which should
+    be the first information in the file, is 10 bytes as follows"
+
+    Enabling tags at the end of the file would break backwards
+    compatibility with de facto all currently existing ID3 v 2.3
+    implementations. Nobody looks at the end of the file, not even ID3 v
+    2.4 implementations. 
+
+
+* Allow UTF-8 character data in 2.3, similar to 2.4, with the same
+  encoding spec (type = 3) 
+
+   +1
+
+
+* Formalize multiple-value tags.  Whether that's simple multiple
+  frames in the same tag (e.g. two or more TPE1 frames) or a single
+  null-delimited frame
+
+
+    Multiple frames would also break backwards compatibility - "There
+    may only be one text information frame of its kind in an tag."
+    Well, breaking this rule won't make any existing parser fail, but
+    many existing implementations would probably just use the last
+    frame - which often should be the *less* important artist, for
+    example (assuming that the first artist is first in the tag and
+    that the first artist is the more important one). 
+
+    Null-delimited frames seem to be the better choice for me, since
+    they behave identically for current parsers, assuming that they
+    read the frame data as simple null-terminated string. 
+
+
+* Formalize TPE2 as album artist.  Although ideally we'd make a new
+  frame for this, this has been a de-facto standard.
+
+    Yes, use TPE2 for that.
+
+* Add new frames from 2.4 to the 2.3 spec.  It shouldn't break any
+  existing parsers to have unknown frames.  For example, TMOO (Mood)
+
+    +1
+
+		    ------------------------------
+
+Ben Allison (2011-03-30):
+
+>> * Allow ID3v2.3 tags at the end of the file with a footer, a-la ID3v2.4.
+>> This shouldn't break any existing specs.
+>
+> Well it does - from the specs: "The ID3v2 tag header, which should be
+> the first information in the file, is 10 bytes as follows"
+>
+> Enabling tags at the end of the file would break backwards compatibility
+> with de facto all currently existing ID3 v 2.3 implementations. Nobody
+> looks at the end of the file, not even ID3 v 2.4 implementations.
+
+I meant that existing parsers would just quietly ignore the ID3v2.3 tag at
+the end of the file.  Appended tags aren't used much anyway.  The only
+implementation I've seen is Fraunhofer's mp3 lossless format (mp3HD)
+which, unfortunately, stores the lossless recovery data in an ID3v2 tag
+and therefore prefers to put it at the end.  A 25MB ID3v2 at the start of
+a file causes performance problems for a LOT of players.
+
+One word of warning is that appended tags have a much higher risk of
+false-synchronization (if not unsynchronized) because the data is much
+more likely to get fed to the MP3 decoder.
+
+>> * Formalize multiple-value tags.  Whether that's simple multiple frames
+>> in
+>> the same tag (e.g. two or more TPE1 frames) or a single null-delimited
+>> frame
+>
+> Multiple frames would also break backwards compatibility - "There may
+> only be one text information frame of its kind in an tag." Well,
+> breaking this rule won't make any existing parser fail, but many
+> existing implementations would probably just use the last frame -  which
+> often should be the *less* important artist, for example (assuming that
+> the first artist is first in the tag and that the first artist is the
+> more important one).
+>
+> Null-delimited frames seem to be the better choice for me, since they
+> behave identically for current parsers, assuming that they read the
+> frame data as simple null-terminated string.
+
+Yeah, I agree with this.  I mentioned multiple frames only because that's
+how some other metadata formats handle this.  I'm not particularly partial
+to it and I agree that it conflicts with the existing spec.
+
+		    ------------------------------
+
+Benjamin Cook (2011-03-30):
+
+    * Allow UTF-8 character data in 2.3, similar to 2.4, with the same
+    encoding spec (type = 3)
+
+    * Formalize multiple-value tags.  Whether that's simple multiple frames in
+    the same tag (e.g. two or more TPE1 frames) or a single null-delimited
+    frame
+
+    * Formalize TPE2 as album artist.  Although ideally we'd make a new frame
+    for this, this has been a de-facto standard.
+
+These are the only three that I feel anything about; foobar2000 has a
+  resolution of every single one, and the latter two were changed
+  recently. I don't know details about the first, but I know
+  foobar2000 does it somehow. I'm trying to get Peter (foobar2000
+  developer) onboard for some of these discussions. I am concerned,
+  however, about the accountability of having this discussion happen
+  off-list. I admit that I am not extremely familiar with
+  developer-oriented mailing lists, but it seems as though they do
+  provide an accountability-related paper trail in many projects.
+
+
+		    ------------------------------
+
+
+Ben Allison (2011-04-01):
+
+Here's my proposal regarding time fields..  I'll go over a few scenarios.
+
+First I'll do the v2.4 timestamp fields.
+
+TDOR - Original release time - This should be used for songs that are
+covers.  e.g. 311's cover of the Cure's "Love Song" was released in 2004,
+but the Cure's original version was released 1989-08-21, so this is the
+value that is intended to be stored in TDOR
+
+TDRC - Recording time - This should be used for things like live concerts.
+ For example, songs from The Doors' "Live in Pittsburgh 1970" would have a
+TDRC of 1970-05-02, even though the album was released in 2008
+
+TDRL - Release time - This is mentioned as "first release time" in the
+v2.4 spec. This would imply the date that the this particular recording of
+the song was first released.  For greatest hits albums, each individual
+song could use this to store the year that the song was original released.
+ For songs that might have previously come out as singles or EPs, that
+date can be recorded here.
+
+However, we're missing one important one, which is the release date of the
+album that the song was actually part of (e.g. what album you ripped the
+mp3 from!).  We could either redefine TDRL as the album release year and
+create a new field (TDFR?) as the first release date, or we could make a
+new field for this value.  Perhaps TDCR - Collection Release Date - which
+is the year that the collection this song appears on (album, etc) was
+released.  This field would be the one that is typically shown to the
+user.
+
+Imagine an album of "Best Live Hits" for a particular band that is
+compiled from previously released concert releases.   A given song might
+have four dates associated with it:
+
+TDCR - collection release time - let's say 2011 for this example
+TDRL - first release time - the song was previous released on an album in
+2007, so that's what is present here
+TDRC - recording time - the concert that the song was recorded from was in
+2006
+TDOR - original release time - the song is a cover of a 1968 song, so that
+is included here.
+
+
+
+For 2.3 we have somewhat similar fields
+TYER - corresponds with TDLR
+TRDA - same as TDRC but with no defined date specification
+TORY - corresponds to TDOR
+v2.3 is also missing a well-defined "album this song came from" year.
+
+In my experience, TYER is typically the album release year rather than the
+original song release year, although I've seen greatest hits albums tagged
+both ways.
+
+My recommendation would be to redefine TDLR and TYER as "album release
+date" and make new fields for "first release date" for first release date
+of a song on a single/EP/LP.
+
+Also, there is the issue of re-releases, re-masters and albums coming out
+on new formats (e.g. DVD Audio).  In this case it might be necessary to
+store a 5th date for the year of the re-master.
+
+As a matter of personal preference, I tag the songs as the year that the
+album was original released and for now just put the re-release date in
+brackets of the album name or something similar.  So for example, my copy
+of the ripped tracks from Neil Young's DVD Audio release of Harvest is
+tagged as 1972 even though the DVD Audio came out in 2002.  I prefer this
+because I tend to sort my albums by order of release (discography style).
+
+Thoughts?  Agreement/Disagreement?
+
+Ben Allison
+Principal Software Engineer
+Nullsoft, Inc.
+
+		    ------------------------------
+
+Mathias K. (2011-04-02):
+
+    TDOR - Original release time - This should be used for songs that are
+    covers.  e.g. 311's cover of the Cure's "Love Song" was released in 2004,
+    but the Cure's original version was released 1989-08-21, so this is the
+    value that is intended to be stored in TDOR
+
+
+TDOR generally is "a timestamp describing when the original recording
+of the audio was released". This also applies to cover songs. So no
+change here compared to the existing ID3 2.4 specs.
+
+
+    TDRC - Recording time - This should be used for things like live concerts.
+     For example, songs from The Doors' "Live in Pittsburgh 1970" would have a
+    TDRC of 1970-05-02, even though the album was released in 2008
+
+
+No - the problem is that TDRC has actually become the standard frame
+to store the release date instead of the recording date. iTunes, VLC
+Media Player, foobar2000, and most other implementations handle it
+that way. What we should discuss is officially redefining TDRC as
+release date instead of recording date. This would increase general
+compatibility of ID3 2.4 implementations.
+
+
+    TDRL - Release time - This is mentioned as "first release time" in the
+    v2.4 spec. This would imply the date that the this particular recording of
+    the song was first released.  For greatest hits albums, each individual
+    song could use this to store the year that the song was original released.
+     For songs that might have previously come out as singles or EPs, that
+    date can be recorded here.
+
+
+The problem is that it's not clear from the specs whether the first
+release date of a song's album, or of the song itself is meant. It may
+is a good idea to clarify this. Regarding compatibility with existing
+implementations (as far as they use TDRL at all), I think this is
+mostly interpreted as first release date of the song's album, not of
+the song itself.
+
+
+    However, we're missing one important one, which is the release date of the
+    album that the song was actually part of (e.g. what album you ripped the
+    mp3 from!).
+
+
+In the sense of common use: definitely no - TDRC is used for that. In
+the sense of officially ID3 2.4 specified use: probably also no - TDRL
+should be intended for this, since it probably should be interpreted
+as "first release date of a specific album". The "first" release date
+probably only means to ignore different release dates of the same
+album within different countries around the world, or to ignore
+re-releases of the exact same album which happen later.
+
+
+    In my experience, TYER is typically the album release year rather than the
+    original song release year, although I've seen greatest hits albums tagged
+    both ways.
+
+
+Yes, TYER is definitely primarily used as album release year.
+
+
+    My recommendation would be to redefine TDLR and TYER as "album release
+    date" and make new fields for "first release date" for first release date
+    of a song on a single/EP/LP.
+
+
+TYER and TORY already serve your needs in 2.3: TYER is defined as "a
+year of the recording", whereby "recording" should actually be read as
+"album", not as "recording act". TORY is the "original release year".
+
+Mathias K.
+
